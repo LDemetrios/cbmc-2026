@@ -218,9 +218,18 @@ void check_unique() {
   //TODO: здесь нужно написать свои ограничения, которые гарантируют следующее:
   //TODO: если в буферах buf1 и buf2 разные строки и каждый их символ либо пробел, либо буква от `a` (латинская) до `z`
   //TODO: то crc64 хэши этих буферов различны
+  int different = 0;
+  for (size_t i = 0; i < STRLEN; ++i) {
+    __CPROVER_assume(buf1[i] == ' ' || (buf1[i] >= 'a' && buf1[i] <= 'z'));
+    __CPROVER_assume(buf2[i] == ' ' || (buf2[i] >= 'a' && buf2[i] <= 'z'));
+    different |= buf1[i] != buf2[i];
+  }
+  __CPROVER_assume(different);
+  assert(fio_crc64((const unsigned char *)buf1, STRLEN) !=
+         fio_crc64((const unsigned char *)buf2, STRLEN));
 }
 
-#define HASH 17625494597720145299
+#define HASH 17625494597720145299ULL
 void check_decode() {
   char buf[STRLEN+1];
   buf[STRLEN] = 0;
@@ -229,4 +238,8 @@ void check_decode() {
   //TODO: сообщение должно быть помещено в буфер buf для проверки
   //TODO: чтобы проверить правильность своих ограничений, попробуйте написать отдельный код, в котором захэшировать своё сообщение, и выполните его как обычную C программу
   //TODO: затем попробуйте обратить полученный хэш при помощи своих ограничений и CBMC
+  for (size_t i = 0; i < STRLEN; ++i) {
+    __CPROVER_assume(buf[i] == ' ' || (buf[i] >= 'a' && buf[i] <= 'z'));
+  }
+  assert(fio_crc64((const unsigned char *)buf, STRLEN) != HASH);
 }

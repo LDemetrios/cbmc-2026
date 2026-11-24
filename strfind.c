@@ -9,7 +9,7 @@ unsigned search(char *s, unsigned len) {
     char ch=s[i];                 // других чтений s[...] не должно быть
     if (seen==0 && ch=='+')
             seen=1;
-    else if (seen==1 && ch=='+')
+    else if (seen>=1 && ch=='+')
             seen=2;
     else if (seen==2 && ch=='x')
             return i-2;  // found
@@ -19,10 +19,21 @@ unsigned search(char *s, unsigned len) {
   return len;                // not found
 }
 
+unsigned search_reference(const char *s, unsigned len) {
+  for (unsigned i = 0; i + 2 < len; ++i) {
+    if (s[i] == '+' && s[i + 1] == '+' && s[i + 2] == 'x')
+      return i;
+  }
+  return len;
+}
+
 int main() {
   char s[LEN];
   //TODO: здесь нужно написать свои ограничения, которые гарантируют следующее:
   //TODO: функция `search(s, len)` возвращает индекс в `s` начала подстроки `++x`, если эта подстрока есть в строке `s`, иначе возвращает `len`
   //TODO: подсказка: напишите вспомогательную неоптимальную функцию для этой же задачи
+  unsigned len;
+  __CPROVER_assume(len <= LEN);
+  assert(search(s, len) == search_reference(s, len));
   return 0;
 }
